@@ -59,3 +59,4 @@ will result in the following value of the key value store
 2. Enumerate all test cases and pytest them
 3. document + readme
 5. Define what a token is
+6. separate out test folder
