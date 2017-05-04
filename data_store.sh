@@ -5,8 +5,8 @@ sudo pip install -U -r requirements.txt
 
 # Run pytest
 echo '*** Running tests ***'
-py.test --cov==src
+py.test
 
 # Run the program
 echo '*** Start program ***'
-python src/interpreter.py
+python interpreter.py

@@ -1,45 +1,54 @@
 from collections import defaultdict
-import json
 
 # Global variables
 
 # main key/value data structure
 KV_STORE = dict()
-# dict that stores every token among the values of KV_STORE, along with their corresponsing frequencies
+# dict that stores every word among the values of KV_STORE, along with their corresponsing frequencies
 VF_STORE = defaultdict(int)
 
 
 # Methods
-def set(key, value):
+def ds_set(keys, value, d=KV_STORE):
     """
-    String, String/Dict -> None
+    List, String/Dict, Dict -> None
 
-    Given: a key and a value
+    Given: a list of key/s, a value and a dict to store the key/s and value in
 
     Effect: sets key = value in KV_STORE. cleans up keys in VF_STORE if the value of an existing key is being replaced
     """
-    global KV_STORE
-    if key in KV_STORE:
-        decrement_vf_store(KV_STORE.get(key))
-    if is_json(value):
-        value = json.loads(value)
-    KV_STORE[key] = value
-    update_vf_store(value)
+    key = keys[0]
+    if len(keys) > 1:
+        if key in d:
+            if isinstance(d.get(key), str):
+                decrement_vf_store(d.get(key))
+                d[key] = {}
+        else:
+            d[key] = {}
+        ds_set(keys[1:], value, d.get(key))
+    else:
+        if key in d:
+            decrement_vf_store(d.get(key))
+        d[key] = value
+        increment_vf_store(value)
 
 
-def delete(key):
+def ds_delete(keys, d=KV_STORE):
     """
-    String -> None
+    List, Dict -> None
 
-    Given: a key
+    Given: a list of key/s
 
     Effect: removes given key from KV_STORE. Reduces the frequency of keys in VF_STORE for the corresponding value being
             deleted
     """
-    global KV_STORE
-    if key in KV_STORE:
-        decrement_vf_store(KV_STORE[key])
-        KV_STORE.pop(key, None)
+    key = keys[0]
+    if key in d:
+        if len(keys) > 1:
+            ds_delete(keys[1:], d.get(key))
+        else:
+            decrement_vf_store(d.get(key))
+            d.pop(key, None)
     else:
         print 'Key doesn\'t exist. Cannot delete'
 
@@ -72,30 +81,15 @@ def display_max_vf_store():
         maximum = max(VF_STORE, key=VF_STORE.get)
         print '\nMost common word: {}'.format(maximum)
     else:
-        print 'Dictionary is empty'
+        print 'No values in the dictionary'
 
 
 # Helper functions
-def is_json(s):
-    """
-    String -> Boolean
-
-    Given: a string
-
-    Returns: returns True iff the given string is a valid JSON string
-    """
-    try:
-        json.loads(s)
-    except ValueError:
-        return False
-    return True
-
-
 def decrement_vf_store(value):
-    """cleanup-> decrement
+    """
     String/Dict -> None
 
-    Given: a 'value'
+    Given: a 'value' string
 
     Effect: Tokenizes the given value and reduces the frequency of each token in VF_STORE by one
     """
@@ -110,18 +104,18 @@ def decrement_vf_store(value):
                 VF_STORE.pop(v, None)
 
 
-def update_vf_store(value):
-    """update -> increment
+def increment_vf_store(value):
+    """
     String/Dict -> None
 
-    Given: a 'value'
+    Given: a 'value' string
 
-    Effect: Tokenizes the given value and increses the frequency of each token in VF_STORE by one
+    Effect: Tokenizes the given value and increases the frequency of each token in VF_STORE by one
     """
     global VF_STORE
     if isinstance(value, dict):
         for k, v in value.iteritems():
-            update_vf_store(v)
+            increment_vf_store(v)
     else:
         for token in value.strip().split():
             VF_STORE[token] += 1
