@@ -1,5 +1,3 @@
-## Agora.co programming test
-
 ### Design:
 
 #### 1. Set
